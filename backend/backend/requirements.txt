@@ -1,0 +1,567 @@
+
+Action: file_editor view /app/frontend/src/App.js
+Observation: /app/frontend/src/App.js:
+1|import React, { useState, useEffect } from 'react';
+2|import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+3|import axios from 'axios';
+4|import './App.css';
+5|import { Toaster } from './components/ui/sonner';
+6|import { toast } from 'sonner';
+7|
+8|const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+9|const API = `${BACKEND_URL}/api`;
+10|
+11|// Auth Context
+12|const AuthContext = React.createContext();
+13|
+14|function AuthProvider({ children }) {
+15|  const [user, setUser] = useState(null);
+16|  const [loading, setLoading] = useState(true);
+17|
+18|  useEffect(() => {
+19|    checkExistingSession();
+20|  }, []);
+21|
+22|  const checkExistingSession = async () => {
+23|    try {
+24|      const response = await axios.get(`${API}/auth/me`, {
+25|        withCredentials: true
+26|      });
+27|      setUser(response.data);
+28|    } catch (error) {
+29|      console.log('No existing session');
+30|    } finally {
+31|      setLoading(false);
+32|    }
+33|  };
+34|
+35|  const login = (redirectUrl = `${window.location.origin}/dashboard`) => {
+36|    window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+37|  };
+38|
+39|  const logout = async () => {
+40|    try {
+41|      await axios.post(`${API}/auth/logout`, {}, { withCredentials: true });
+42|      setUser(null);
+43|    } catch (error) {
+44|      console.error('Logout error:', error);
+45|    }
+46|  };
+47|
+48|  return (
+49|    <AuthContext.Provider value={{ user, setUser, login, logout, loading }}>
+50|      {children}
+51|    </AuthContext.Provider>
+52|  );
+53|}
+54|
+55|const useAuth = () => React.useContext(AuthContext);
+56|
+57|// Loading Component
+58|function LoadingScreen() {
+59|  return (
+60|    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-red-900 flex items-center justify-center">
+61|      <div className="text-center">
+62|        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-red-500 mb-4"></div>
+63|        <h2 className="text-white text-xl font-bold">Loading CarCommunity...</h2>
+64|      </div>
+65|    </div>
+66|  );
+67|}
+68|
+69|// Landing Page
+70|function LandingPage() {
+71|  const { login } = useAuth();
+72|
+73|  return (
+74|    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-red-900 text-white">
+75|      {/* Hero Section */}
+76|      <div className="relative min-h-screen flex items-center justify-center">
+77|        <div 
+78|          className="absolute inset-0 bg-cover bg-center opacity-30"
+79|          style={{
+80|            backgroundImage: 'url(https://images.unsplash.com/photo-1532581140115-3e355d1ed1de?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzR8MHwxfHNlYXJjaHwxfHxzcG9ydHMlMjBjYXJzfGVufDB8fHx8MTc1ODcxNTMxOXww&ixlib=rb-4.1.0&q=85)'
+81|          }}
+82|        />
+83|        <div className="relative z-10 text-center max-w-4xl px-6">
+84|          <h1 className="text-6xl md:text-8xl font-black mb-6 tracking-tight">
+85|            CAR<span className="text-red-500">COMMUNITY</span>
+86|          </h1>
+87|          <p className="text-xl md:text-2xl mb-8 text-gray-300 font-medium">
+88|            Connect. Build. Share. The ultimate platform for car enthusiasts.
+89|          </p>
+90|          <button
+91|            data-testid="get-started-btn"
+92|            onClick={() => login()}
+93|            className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white px-12 py-4 rounded-none font-bold text-lg uppercase tracking-wider transform hover:scale-105 transition-all duration-300 shadow-2xl border-2 border-red-500"
+94|          >
+95|            GET STARTED
+96|          </button>
+97|        </div>
+98|      </div>
+99|
+100|      {/* Features Section */}
+101|      <div className="py-20 px-6">
+102|        <div className="max-w-6xl mx-auto">
+103|          <h2 className="text-4xl font-black text-center mb-16 text-white">
+104|            BUILT FOR <span className="text-red-500">CAR GUYS</span>
+105|          </h2>
+106|          
+107|          <div className="grid md:grid-cols-3 gap-8">
+108|            <div className="bg-gray-800/50 p-8 border-l-4 border-red-500 backdrop-blur-sm">
+109|              <div className="w-16 h-16 bg-red-500 rounded-lg flex items-center justify-center mb-6">
+110|                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+111|                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+112|                </svg>
+113|              </div>
+114|              <h3 className="text-2xl font-bold mb-4 text-white">Share Your Build</h3>
+115|              <p className="text-gray-300">Post photos and videos of your latest modifications, restorations, and build progress.</p>
+116|            </div>
+117|
+118|            <div className="bg-gray-800/50 p-8 border-l-4 border-orange-500 backdrop-blur-sm">
+119|              <div className="w-16 h-16 bg-orange-500 rounded-lg flex items-center justify-center mb-6">
+120|                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+121|                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+122|                </svg>
+123|              </div>
+124|              <h3 className="text-2xl font-bold mb-4 text-white">Connect</h3>
+125|              <p className="text-gray-300">Follow other builders, like their posts, and build relationships in the car community.</p>
+126|            </div>
+127|
+128|            <div className="bg-gray-800/50 p-8 border-l-4 border-yellow-500 backdrop-blur-sm">
+129|              <div className="w-16 h-16 bg-yellow-500 rounded-lg flex items-center justify-center mb-6">
+130|                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+131|                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+132|                </svg>
+133|              </div>
+134|              <h3 className="text-2xl font-bold mb-4 text-white">Get Inspired</h3>
+135|              <p className="text-gray-300">Discover amazing builds, get ideas for your next project, and stay motivated.</p>
+136|            </div>
+137|          </div>
+138|        </div>
+139|      </div>
+140|
+141|      {/* Showcase Section */}
+142|      <div className="py-20 px-6 bg-black/50">
+143|        <div className="max-w-6xl mx-auto">
+144|          <h2 className="text-4xl font-black text-center mb-16 text-white">
+145|            FROM THE <span className="text-red-500">COMMUNITY</span>
+146|          </h2>
+147|          
+148|          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+149|            {[
+150|              'https://images.unsplash.com/photo-1570582647329-5dfc8efa75eb',
+151|              'https://images.unsplash.com/photo-1557349504-2f6a19aff9d5',
+152|              'https://images.pexels.com/photos/2365572/pexels-photo-2365572.jpeg',
+153|              'https://images.unsplash.com/photo-1536909526839-8f10e29ba80c'
+154|            ].map((img, idx) => (
+155|              <div key={idx} className="relative group overflow-hidden bg-gray-800 aspect-square">
+156|                <img 
+157|                  src={img} 
+158|                  alt={`Car ${idx + 1}`}
+159|                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+160|                />
+161|                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+162|              </div>
+163|            ))}
+164|          </div>
+165|        </div>
+166|      </div>
+167|
+168|      {/* CTA Section */}
+169|      <div className="py-20 px-6 text-center">
+170|        <h2 className="text-5xl font-black mb-6 text-white">
+171|          READY TO <span className="text-red-500">START BUILDING?</span>
+172|        </h2>
+173|        <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+174|          Join thousands of car enthusiasts sharing their passion, builds, and expertise.
+175|        </p>
+176|        <button
+177|          data-testid="join-now-btn"
+178|          onClick={() => login()}
+179|          className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white px-12 py-4 rounded-none font-bold text-lg uppercase tracking-wider transform hover:scale-105 transition-all duration-300 shadow-2xl border-2 border-red-500"
+180|        >
+181|          JOIN NOW
+182|        </button>
+183|      </div>
+184|    </div>
+185|  );
+186|}
+187|
+188|// Dashboard Components
+189|function CreatePost({ onPostCreated }) {
+190|  const [isOpen, setIsOpen] = useState(false);
+191|  const [content, setContent] = useState('');
+192|  const [imageUrl, setImageUrl] = useState('');
+193|  const [videoUrl, setVideoUrl] = useState('');
+194|  const [buildCategory, setBuildCategory] = useState('');
+195|  const [loading, setLoading] = useState(false);
+196|
+197|  const categories = ['JDM', 'Muscle', 'Euro', 'Truck', 'Exotic', 'Classic', 'Drift', 'Racing', 'Other'];
+198|
+199|  const handleSubmit = async (e) => {
+200|    e.preventDefault();
+201|    if (!content.trim()) return;
+202|
+203|    setLoading(true);
+204|    try {
+205|      const response = await axios.post(`${API}/posts`, {
+206|        content: content.trim(),
+207|        image_url: imageUrl || null,
+208|        video_url: videoUrl || null,
+209|        build_category: buildCategory || null
+210|      }, { withCredentials: true });
+211|
+212|      toast.success('Post created successfully!');
+213|      setContent('');
+214|      setImageUrl('');
+215|      setVideoUrl('');
+216|      setBuildCategory('');
+217|      setIsOpen(false);
+218|      onPostCreated();
+219|    } catch (error) {
+220|      toast.error('Failed to create post');
+221|    } finally {
+222|      setLoading(false);
+223|    }
+224|  };
+225|
+226|  return (
+227|    <>
+228|      <button
+229|        data-testid="create-post-btn"
+230|        onClick={() => setIsOpen(true)}
+231|        className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white p-4 rounded-lg font-bold uppercase tracking-wider transition-all duration-300 mb-6"
+232|      >
+233|        SHARE YOUR BUILD
+234|      </button>
+235|
+236|      {isOpen && (
+237|        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+238|          <div className="bg-gray-900 border-2 border-red-500 rounded-lg p-6 w-full max-w-md">
+239|            <div className="flex justify-between items-center mb-6">
+240|              <h2 className="text-2xl font-bold text-white">CREATE POST</h2>
+241|              <button
+242|                onClick={() => setIsOpen(false)}
+243|                className="text-gray-400 hover:text-white text-2xl"
+244|              >
+245|                ×
+246|              </button>
+247|            </div>
+248|
+249|            <form onSubmit={handleSubmit}>
+250|              <textarea
+251|                data-testid="post-content-input"
+252|                value={content}
+253|                onChange={(e) => setContent(e.target.value)}
+254|                placeholder="What's happening with your build?"
+255|                className="w-full bg-gray-800 text-white p-3 rounded-lg mb-4 min-h-[120px] border border-gray-700 focus:border-red-500 focus:outline-none"
+256|                required
+257|              />
+258|
+259|              <input
+260|                data-testid="post-image-input"
+261|                type="url"
+262|                value={imageUrl}
+263|                onChange={(e) => setImageUrl(e.target.value)}
+264|                placeholder="Image URL (optional)"
+265|                className="w-full bg-gray-800 text-white p-3 rounded-lg mb-4 border border-gray-700 focus:border-red-500 focus:outline-none"
+266|              />
+267|
+268|              <input
+269|                data-testid="post-video-input"
+270|                type="url"
+271|                value={videoUrl}
+272|                onChange={(e) => setVideoUrl(e.target.value)}
+273|                placeholder="Video URL (optional)"
+274|                className="w-full bg-gray-800 text-white p-3 rounded-lg mb-4 border border-gray-700 focus:border-red-500 focus:outline-none"
+275|              />
+276|
+277|              <select
+278|                data-testid="post-category-select"
+279|                value={buildCategory}
+280|                onChange={(e) => setBuildCategory(e.target.value)}
+281|                className="w-full bg-gray-800 text-white p-3 rounded-lg mb-6 border border-gray-700 focus:border-red-500 focus:outline-none"
+282|              >
+283|                <option value="">Select Category</option>
+284|                {categories.map(cat => (
+285|                  <option key={cat} value={cat}>{cat}</option>
+286|                ))}
+287|              </select>
+288|
+289|              <div className="flex gap-3">
+290|                <button
+291|                  type="button"
+292|                  onClick={() => setIsOpen(false)}
+293|                  className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-bold transition-colors"
+294|                >
+295|                  CANCEL
+296|                </button>
+297|                <button
+298|                  data-testid="submit-post-btn"
+299|                  type="submit"
+300|                  disabled={loading || !content.trim()}
+301|                  className="flex-1 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 disabled:from-gray-600 disabled:to-gray-600 text-white py-3 rounded-lg font-bold transition-all duration-300"
+302|                >
+303|                  {loading ? 'POSTING...' : 'POST'}
+304|                </button>
+305|              </div>
+306|            </form>
+307|          </div>
+308|        </div>
+309|      )}
+310|    </>
+311|  );
+312|}
+313|
+314|function PostCard({ post, onLike }) {
+315|  const { user } = useAuth();
+316|
+317|  const handleLike = async () => {
+318|    try {
+319|      await axios.post(`${API}/posts/${post.id}/like`, {}, { withCredentials: true });
+320|      onLike();
+321|    } catch (error) {
+322|      toast.error('Failed to like post');
+323|    }
+324|  };
+325|
+326|  return (
+327|    <div className="bg-gray-900 border-2 border-gray-700 hover:border-red-500 rounded-lg p-6 transition-all duration-300">
+328|      {/* User Info */}
+329|      <div className="flex items-center mb-4">
+330|        <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-3">
+331|          {post.user_picture ? (
+332|            <img src={post.user_picture} alt={post.user_name} className="w-full h-full rounded-full object-cover" />
+333|          ) : (
+334|            post.user_name.charAt(0).toUpperCase()
+335|          )}
+336|        </div>
+337|        <div>
+338|          <h3 className="text-white font-bold">{post.user_name}</h3>
+339|          <p className="text-gray-400 text-sm">
+340|            {new Date(post.created_at).toLocaleDateString()}
+341|          </p>
+342|        </div>
+343|        {post.build_category && (
+344|          <span className="ml-auto bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+345|            {post.build_category}
+346|          </span>
+347|        )}
+348|      </div>
+349|
+350|      {/* Content */}
+351|      <p className="text-white mb-4">{post.content}</p>
+352|
+353|      {/* Media */}
+354|      {post.image_url && (
+355|        <div className="mb-4 rounded-lg overflow-hidden">
+356|          <img 
+357|            src={post.image_url} 
+358|            alt="Post content" 
+359|            className="w-full h-auto object-cover hover:scale-105 transition-transform duration-300"
+360|          />
+361|        </div>
+362|      )}
+363|
+364|      {post.video_url && (
+365|        <div className="mb-4 rounded-lg overflow-hidden">
+366|          <video 
+367|            src={post.video_url} 
+368|            controls 
+369|            className="w-full h-auto"
+370|          />
+371|        </div>
+372|      )}
+373|
+374|      {/* Actions */}
+375|      <div className="flex items-center gap-4 pt-4 border-t border-gray-700">
+376|        <button
+377|          data-testid={`like-btn-${post.id}`}
+378|          onClick={handleLike}
+379|          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all duration-300 ${
+380|            post.is_liked 
+381|              ? 'bg-red-500 text-white' 
+382|              : 'bg-gray-800 text-gray-300 hover:bg-red-500 hover:text-white'
+383|          }`}
+384|        >
+385|          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+386|            <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+387|          </svg>
+388|          {post.likes_count}
+389|        </button>
+390|
+391|        <button className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold bg-gray-800 text-gray-300 hover:bg-orange-500 hover:text-white transition-all duration-300">
+392|          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+393|            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a9.863 9.863 0 01-4.126-.9L3 20l1.9-5.874A9.863 9.863 0 013 12c0-4.418 3.582-8 8-8s8 3.582 8 8z" />
+394|          </svg>
+395|          {post.comments_count}
+396|        </button>
+397|      </div>
+398|    </div>
+399|  );
+400|}
+401|
+402|function Dashboard() {
+403|  const { user, logout } = useAuth();
+404|  const [posts, setPosts] = useState([]);
+405|  const [loading, setLoading] = useState(true);
+406|
+407|  useEffect(() => {
+408|    fetchPosts();
+409|  }, []);
+410|
+411|  const fetchPosts = async () => {
+412|    try {
+413|      const response = await axios.get(`${API}/posts`, { withCredentials: true });
+414|      setPosts(response.data);
+415|    } catch (error) {
+416|      toast.error('Failed to load posts');
+417|    } finally {
+418|      setLoading(false);
+419|    }
+420|  };
+421|
+422|  return (
+423|    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-red-900">
+424|      {/* Header */}
+425|      <header className="bg-black/50 backdrop-blur-sm border-b-2 border-red-500 sticky top-0 z-40">
+426|        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+427|          <h1 className="text-3xl font-black text-white">
+428|            CAR<span className="text-red-500">COMMUNITY</span>
+429|          </h1>
+430|          
+431|          <div className="flex items-center gap-4">
+432|            <div className="flex items-center gap-3">
+433|              <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white font-bold">
+434|                {user?.picture ? (
+435|                  <img src={user.picture} alt={user.name} className="w-full h-full rounded-full object-cover" />
+436|                ) : (
+437|                  user?.name?.charAt(0).toUpperCase()
+438|                )}
+439|              </div>
+440|              <span className="text-white font-bold">{user?.name}</span>
+441|            </div>
+442|            
+443|            <button
+444|              data-testid="logout-btn"
+445|              onClick={logout}
+446|              className="bg-gray-700 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold transition-colors"
+447|            >
+448|              LOGOUT
+449|            </button>
+450|          </div>
+451|        </div>
+452|      </header>
+453|
+454|      {/* Main Content */}
+455|      <div className="max-w-4xl mx-auto px-6 py-8">
+456|        <CreatePost onPostCreated={fetchPosts} />
+457|
+458|        {loading ? (
+459|          <div className="text-center py-12">
+460|            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-red-500 mx-auto mb-4"></div>
+461|            <p className="text-white font-bold">Loading posts...</p>
+462|          </div>
+463|        ) : (
+464|          <div data-testid="posts-feed" className="space-y-6">
+465|            {posts.length === 0 ? (
+466|              <div className="text-center py-12">
+467|                <p className="text-gray-400 text-xl">No posts yet. Be the first to share your build!</p>
+468|              </div>
+469|            ) : (
+470|              posts.map(post => (
+471|                <PostCard 
+472|                  key={post.id} 
+473|                  post={post} 
+474|                  onLike={fetchPosts}
+475|                />
+476|              ))
+477|            )}
+478|          </div>
+479|        )}
+480|      </div>
+481|    </div>
+482|  );
+483|}
+484|
+485|// Session Handler
+486|function SessionHandler() {
+487|  const { setUser } = useAuth();
+488|  const [processing, setProcessing] = useState(true);
+489|
+490|  useEffect(() => {
+491|    const handleSession = async () => {
+492|      const fragment = window.location.hash;
+493|      const params = new URLSearchParams(fragment.substring(1));
+494|      const sessionId = params.get('session_id');
+495|
+496|      if (sessionId) {
+497|        try {
+498|          const response = await axios.get(`${API}/auth/session?session_id=${sessionId}`);
+499|          
+500|          // Set cookie
+501|          document.cookie = `session_token=${response.data.session_token}; path=/; secure; samesite=none; max-age=${7 * 24 * 60 * 60}`;
+502|          
+503|          setUser(response.data.user);
+504|          
+505|          // Clean URL
+506|          window.history.replaceState({}, document.title, '/dashboard');
+507|          
+508|          toast.success('Welcome to CarCommunity!');
+509|        } catch (error) {
+510|          console.error('Session error:', error);
+511|          toast.error('Authentication failed');
+512|          window.location.href = '/';
+513|        }
+514|      } else {
+515|        window.location.href = '/dashboard';
+516|      }
+517|    };
+518|
+519|    handleSession();
+520|  }, [setUser]);
+521|
+522|  return <LoadingScreen />;
+523|}
+524|
+525|// Main App
+526|function App() {
+527|  return (
+528|    <AuthProvider>
+529|      <BrowserRouter>
+530|        <div className="App">
+531|          <AuthRouter />
+532|          <Toaster 
+533|            position="top-right"
+534|            toastOptions={{
+535|              style: {
+536|                background: '#1f2937',
+537|                color: '#ffffff',
+538|                border: '2px solid #ef4444'
+539|              }
+540|            }}
+541|          />
+542|        </div>
+543|      </BrowserRouter>
+544|    </AuthProvider>
+545|  );
+546|}
+547|
+548|function AuthRouter() {
+549|  const { user, loading } = useAuth();
+550|
+551|  if (loading) {
+552|    return <LoadingScreen />;
+553|  }
+554|
+555|  return (
+556|    <Routes>
+557|      <Route path="/" element={user ? <Navigate to="/dashboard" /> : <LandingPage />} />
+558|      <Route path="/auth" element={<SessionHandler />} />
+559|      <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/" />} />
+560|    </Routes>
+561|  );
+562|}
+563|
+564|export default App;
